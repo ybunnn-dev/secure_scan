@@ -20,46 +20,73 @@ SecureScan begins by scanning every file inside the user's home directory.
 * If **not**, it proceeds to analyze the next file.
 * Once **all files are scanned**, the system returns the complete set of analysis results.
 
-> Note: In the original flowchart, the arrow labeled "No" pointing to the results step appears incorrect. Logically, it should be labeled "Yes" (i.e., *"Are all files scanned? — Yes → Return Results"*).
-
----
-
-## 🛡️ 2. Security Checks (Flagging Logic)
+### **2. Security Checks (Flagging Logic)**
 
 SecureScan performs **four checks** on every file. If a file fails any test, a flagging message is added to the file's report.
 
-### **Check 1: Execution Permissions**
+* **Check 1: Execution Permissions**
+    * *Question:* Does the file have the executable bit set?
+    * *Why it matters:* Files in a home directory typically shouldn't be executable unless they are legitimate scripts or programs.
+* **Check 2: File Signature Validation**
+    * *Question:* Is the file signature suspicious?
+    * *How it works:* Reads the file's *magic number* (binary header) and compares it against known malicious patterns.
+* **Check 3: Suspicious Extension Check**
+    * *Question:* Is the file extension known to be risky (e.g., `.exe`, `.bat`, `.sh`)?
+* **Check 4: Signature vs. Extension Mismatch**
+    * *Question:* Does the file's internal signature match its claimed extension?
+    * *Example:* A file named `photo.jpg` that is actually an executable (`.exe`).
 
-* **Question:** Does the file have the executable bit set?
-* **Why it matters:** Files in a home directory typically shouldn't be executable unless they are legitimate scripts or programs. Unexpected executable files could indicate malware.
+---
 
-### **Check 2: File Signature Validation**
+## 📥 Installation & Usage
 
-* **Question:** Is the file signature suspicious?
-* **How it works:** SecureScan reads the file's *magic number* or binary header and compares it against known malicious or unusual patterns.
+You can run SecureScan using a pre-built portable file or by running the source code directly.
 
-### **Check 3: Suspicious Extension Check**
+### **Option 1: Portable AppImage (Recommended for Users)**
+The easiest way to run SecureScan on any Linux distribution (Ubuntu, Arch, Fedora, etc.) without installing Python.
 
-* **Question:** Is the file extension known to be risky?
-* **Examples of suspicious extensions:** `.exe`, `.bat`, `.sh`, `.vbs`, etc.
-* **Purpose:** Some malware uses enticing filenames to hide dangerous payloads.
+1.  **Download** the latest `ScanSecure-x86_64.AppImage` from the [Releases page](#).
+2.  **Make it executable**:
+    ```bash
+    chmod +x ScanSecure-x86_64.AppImage
+    ```
+3.  **Run it**:
+    ```bash
+    ./ScanSecure-x86_64.AppImage
+    ```
 
-### **Check 4: Signature vs. Extension Mismatch**
+### **Option 2: Run from Source (For Developers)**
+If you want to modify the code or contribute, you can clone the repository.
 
-* **Question:** Does the file's internal signature match its claimed extension?
-* **Example:** A file named `photo.jpg` whose signature reveals it is actually an `.exe`.
-* This is a common malware evasion technique that SecureScan can detect.
+1.  **Clone the repository:**
+    ```bash
+    git clone [https://github.com/yourusername/SecureScan.git](https://github.com/yourusername/SecureScan.git)
+    cd SecureScan
+    ```
+
+2.  **Install Dependencies:**
+    You need Python 3 and the `python-magic` library.
+    ```bash
+    # Install system library (Debian/Ubuntu)
+    sudo apt install libmagic1
+
+    # Install Python requirements
+    pip install -r requirements.txt
+    ```
+
+3.  **Run the App:**
+    ```bash
+    python main.py
+    ```
 
 ---
 
 ## 📄 Output
 
 At the end of the scan, SecureScan produces a structured report containing:
-
 * List of scanned files
-* Any flagged files
-* The specific warnings associated with each flagged file
-* Summary of total suspicious files detected
+* Any flagged files with specific warnings
+* A compressed archive (`.tar.gz`) of the results saved in the `reports/` folder.
 
 ---
 

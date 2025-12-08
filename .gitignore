@@ -1,3 +1,8 @@
-backup/
-reports/
-results/
+backup/*
+!backup/
+
+reports/*
+!reports/
+
+results/*
+!results/
