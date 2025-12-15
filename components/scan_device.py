@@ -90,7 +90,7 @@ MIME_TO_EXT = {
 
 SAFE_TEXT_EXTENSIONS = {
     '.conf', '.config', '.ini', '.cfg', '.env', '.yaml', '.yml', 
-    '.toml', '.properties', '.rc', '', '.gitignore', '.dockerignore', '.sql'
+    '.toml', '.properties', '.rc', '', '.gitignore', '.dockerignore', '.sql', '.te', '.js'
 }
 
 

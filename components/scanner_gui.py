@@ -49,7 +49,7 @@ class SuspiciousFileScannerUI:
         sidebar.pack(side="left", fill="y")
         sidebar.pack_propagate(False)
 
-        tk.Label(sidebar, text="SCANSECURE", font=("Calibri", 20, "bold"), bg=self.NAV_BG, fg=self.NAV_TEXT).pack(pady=20)
+        tk.Label(sidebar, text="SecureScan", font=("Calibri", 20, "bold"), bg=self.NAV_BG, fg=self.NAV_TEXT).pack(pady=20)
         ttk.Button(sidebar, text="Scanner", style='Nav.TButton', command=lambda: self.show_page("scanner")).pack(fill="x", pady=5, padx=10)
         ttk.Button(sidebar, text="View Logs", style='Nav.TButton', command=lambda: self.show_page("files")).pack(fill="x", pady=5, padx=10)
         
