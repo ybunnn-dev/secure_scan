@@ -13,9 +13,9 @@ class SuspiciousFileScannerUI:
     NAV_TEXT = "#ffffff"
     CONTENT_BG = "#f0f0f0"
     HEADER_BG = "#e0e0e0"
-    FONT_NORMAL = ("Calibri", 12)
-    FONT_BOLD = ("Calibri", 12, "bold")
-    FONT_TITLE = ("Calibri", 16, "bold")
+    FONT_NORMAL = ("Arial", 12)
+    FONT_BOLD = ("Arial", 12, "bold")
+    FONT_TITLE = ("Arial", 40, "bold")
 
     def __init__(self, master):
         self.master = master
@@ -37,9 +37,9 @@ class SuspiciousFileScannerUI:
     def setup_styles(self):
         style = ttk.Style()
         style.theme_use('clam')
-        style.configure('Nav.TButton', background=self.NAV_BG, foreground=self.NAV_TEXT, font=("Calibri", 14, "bold"), borderwidth=0)
+        style.configure('Nav.TButton', background=self.NAV_BG, foreground=self.NAV_TEXT, font=("Arial", 14, "bold"), borderwidth=0)
         style.map('Nav.TButton', background=[('active', self.NAV_ACTIVE_BG)])
-        style.configure('Scan.TButton', background="#8ea0c7", foreground=self.NAV_TEXT, font=("Calibri", 14, "bold"), padding=(20, 10))
+        style.configure('Scan.TButton', background="#8ea0c7", foreground=self.NAV_TEXT, font=("Arial", 14, "bold"), padding=(20, 10))
         style.map('Scan.TButton', background=[('active', '#5c6d91')])
         style.configure("Treeview.Heading", font=self.FONT_BOLD, background="#5c6d91", foreground="white")
         style.configure("Treeview", rowheight=25, font=self.FONT_NORMAL)
@@ -49,7 +49,7 @@ class SuspiciousFileScannerUI:
         sidebar.pack(side="left", fill="y")
         sidebar.pack_propagate(False)
 
-        tk.Label(sidebar, text="SecureScan", font=("Calibri", 20, "bold"), bg=self.NAV_BG, fg=self.NAV_TEXT).pack(pady=20)
+        tk.Label(sidebar, text="SecureScan", font=("Arial", 20, "bold"), bg=self.NAV_BG, fg=self.NAV_TEXT).pack(pady=20)
         ttk.Button(sidebar, text="Scanner", style='Nav.TButton', command=lambda: self.show_page("scanner")).pack(fill="x", pady=5, padx=10)
         ttk.Button(sidebar, text="View Logs", style='Nav.TButton', command=lambda: self.show_page("files")).pack(fill="x", pady=5, padx=10)
         
@@ -74,7 +74,7 @@ class SuspiciousFileScannerUI:
         center = tk.Frame(page, bg="white", highlightthickness=1)
         center.pack(side="top", fill="both", expand=True, padx=50, pady=50)
 
-        tk.Label(center, text="System Security Scanner", font=self.FONT_TITLE, bg="white").pack(pady=(40, 20))
+        tk.Label(center, text="File Scanner", font=self.FONT_TITLE, bg="white").pack(pady=(40, 20))
         
         self.progress_bar = ttk.Progressbar(center, orient="horizontal", mode="indeterminate", length=400)
         self.progress_bar.pack(pady=10)
