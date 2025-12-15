@@ -4,7 +4,6 @@ from tkinter import ttk, messagebox
 import threading
 import os
 
-# IMPORT THE SEPARATED MODULES
 from . import scan_device
 from . import review
 
@@ -25,8 +24,8 @@ class SuspiciousFileScannerUI:
         master.configure(bg=self.CONTENT_BG)
 
         self.available_archives = [] 
-        self.current_table_data = {}   # Maps ItemID -> Row Data (for clicks)
-        self.full_dataset = []         # Stores the RAW list for filtering
+        self.current_table_data = {}   
+        self.full_dataset = []         
     
         self.setup_styles()
         self.create_main_layout()
@@ -69,7 +68,7 @@ class SuspiciousFileScannerUI:
             self.refresh_archive_list()
             self.page_files.pack(fill="both", expand=True, padx=20, pady=20)
 
-    # --- SCANNER UI ---
+    # scanner screen
     def setup_basic_scan_page(self):
         page = tk.Frame(self.content_area, bg=self.CONTENT_BG)
         center = tk.Frame(page, bg="white", highlightthickness=1)
@@ -87,15 +86,15 @@ class SuspiciousFileScannerUI:
         self.scan_button.pack(pady=30)
         return page
 
-    # --- FILES UI ---
+    # files screen
     def setup_files_table_page(self):
         page = tk.Frame(self.content_area, bg=self.CONTENT_BG)
         
-        # Top Control Bar
+        # top control bar
         top = tk.Frame(page, bg=self.CONTENT_BG)
         top.pack(fill='x', pady=(0, 10))
         
-        # Left side: Dropdown & Refresh
+        # changing reports
         left_frame = tk.Frame(top, bg=self.CONTENT_BG)
         left_frame.pack(side='left')
         
@@ -107,7 +106,7 @@ class SuspiciousFileScannerUI:
         
         ttk.Button(left_frame, text="Refresh", command=self.refresh_archive_list).pack(side='left')
 
-        # Right side: Search Bar
+        # search bar
         right_frame = tk.Frame(top, bg=self.CONTENT_BG)
         right_frame.pack(side='right')
         
@@ -116,10 +115,10 @@ class SuspiciousFileScannerUI:
         self.search_var = tk.StringVar()
         self.search_entry = ttk.Entry(right_frame, textvariable=self.search_var, font=self.FONT_NORMAL, width=25)
         self.search_entry.pack(side='left')
-        # Bind key release to filter instantly
+        
         self.search_entry.bind('<KeyRelease>', self.on_search)
 
-        # Treeview Table
+        # table
         cols = ("path", "extension", "size", "exec", "reasons")
         self.tree = ttk.Treeview(page, columns=cols, show='headings')
         self.tree.heading("path", text="Path"); self.tree.column("path", width=350)
@@ -136,7 +135,7 @@ class SuspiciousFileScannerUI:
         
         return page
 
-    # --- REVIEW LOGIC ---
+    # review refresh
     def refresh_archive_list(self):
         self.available_archives = review.get_available_archives()
         display_values = [f"{item['display_time']}  [{os.path.basename(item['filename'])}]" for item in self.available_archives]
@@ -152,11 +151,11 @@ class SuspiciousFileScannerUI:
         
         selected_archive = self.available_archives[idx]['filename']
         
-        # Load raw data and save to full_dataset
+        # load raw data and save to full_dataset
         raw_data = review.load_archive_to_results(selected_archive)
         self.full_dataset = raw_data  # Save copy for filtering
         
-        # Clear search and show all
+        # clear search and show all
         self.search_var.set("") 
         self.populate_table(self.full_dataset)
 
@@ -164,14 +163,14 @@ class SuspiciousFileScannerUI:
         query = self.search_var.get().lower()
         
         if not query:
-            # If search is empty, show everything
+            # if search is empty, show everything
             self.populate_table(self.full_dataset)
             return
 
-        # Filter the dataset
+        # filter the dataset
         filtered_data = []
         for row in self.full_dataset:
-            # Check if query exists in path, filename, or reasons
+            # check if query exists in path, filename, or reasons
             if (query in row['path'].lower() or 
                 query in row.get('file_name', '').lower() or 
                 query in row['reasons'].lower()):
@@ -191,7 +190,7 @@ class SuspiciousFileScannerUI:
                 "Yes" if row['executable'] else "No", row['reasons']
             ))
 
-    # --- SCAN LOGIC ---
+    # scan logic
     def start_scan_thread(self):
         self.scan_button.config(state=tk.DISABLED)
         self.progress_bar.start(10)
@@ -214,13 +213,13 @@ class SuspiciousFileScannerUI:
         messagebox.showinfo("Scan Complete", f"{msg}\n\nSuspicious files: {vuln}")
         self.refresh_archive_list()
 
-    # --- DELETE LOGIC ---
+    # delete logic
     def on_item_select(self, event):
         sel = self.tree.selection()
         if sel: self.show_popup(sel[0])
 
     def show_popup(self, iid):
-        # Safety check: if searching changed the table, the old iid might be invalid
+        # if searching changed the table, the old id might be invalid
         if iid not in self.current_table_data: return
 
         data = self.current_table_data[iid]

@@ -5,74 +5,103 @@ import shutil
 import magic  
 from datetime import datetime
 
-# Configuration
-HOME = os.path.expanduser("~")
-EXCLUDE_DIRS = {"/proc", "/sys", "/dev", "/run", "/var/lib", "/var/run", "/tmp", "/mnt", "/media", "/snap"}
 
-# [UPDATED] 1. STRICTER Suspicious Extensions List
-# Now includes PDF and standard Office Docs because they can contain malicious scripts/macros.
+HOME = os.path.expanduser("~") #home directory of the user
+EXCLUDE_DIRS = {"/proc", "/sys", "/dev", "/run", "/var/lib", "/var/run", "/tmp", "/mnt", "/media", "/snap"} #excluding system directories
+
+
+# for extention flagging
 SUSPICIOUS_EXTENSIONS = {
     # High Risk (Executables & Scripts)
-    '.exe', '.dll', '.bat', '.cmd', '.sh', '.vbs', '.js', '.ps1', '.elf', '.apk', '.scr', '.wsf', '.wsh',
-    # Medium Risk (Documents & Archives that can contain payloads)
-    '.jar', '.docm', '.xlsm', '.pptm',  # Macro-enabled
-    '.pdf',                             # Scripts/Exploits
-    '.docx', '.doc',                    # Word
-    '.xlsx', '.xls',                    # Excel
-    '.pptx', '.ppt',                    # PowerPoint
-    '.zip', '.rar', '.7z'               # Archives (often hide executables)
+    '.exe', '.dll', '.bat', '.cmd', '.sh', '.vbs', '.js', '.ps1', '.elf', '.apk', '.scr', '.wsf', '.wsh', '.php', '.html',
+    '.jar', '.docm', '.xlsm', '.pptm',  # macro-enabled
+    '.pdf',                             # scripts/exploits
+    '.docx', '.doc',                    # word
+    '.xlsx', '.xls',                    # excel
+    '.pptx', '.ppt',                    # powerpoint
+    '.zip', '.rar', '.7z'               # archives 
 }
 
-# [UPDATED] 2. Comprehensive Mismatch Logic
-# Maps "Magic MIME Types" to allowed extensions.
+
+# dangerous file signatures that indicate executables or scripts
+DANGEROUS_SIGNATURES = {
+    'application/x-dosexec',           # windows EXE/DLL/SCR/COM (4D 5A - "MZ")
+    'application/x-executable',        # ELF executables (7F 45 4C 46 - ".ELF")
+    'application/x-mach-binary',       # macOS Mach-O (FE ED FA CE)
+    'application/x-sharedlib',         # shared libraries (.so files)
+    'application/x-msdownload',        # MSI installers (D0 CF 11 E0)
+    'text/x-shellscript',              # shell scripts (#! /bin/sh)
+    'text/x-python',                   # python scripts (#! /usr/bin/python)
+    'text/x-perl',                     # perl scripts
+    'application/x-javascript',        # javascript
+    'text/javascript',                 # javaScript 
+    'application/javascript',          # javaScript 
+    'application/x-php',               # PHP scripts
+    'text/x-php',                      # PHP scripts 
+}
+
+
 MIME_TO_EXT = {
-    # --- Executables ---
+    # executable type of files portion
     'application/x-dosexec': ['.exe', '.dll', '.com', '.scr'],
     'application/x-executable': ['.elf', '.bin'],
     'application/x-sharedlib': ['.so', '.elf'],
+    'application/x-msdownload': ['.msi'],
     
-    # --- Images ---
+    # images portion
     'image/jpeg': ['.jpg', '.jpeg'],
     'image/png': ['.png'],
     'image/gif': ['.gif'],
     'image/svg+xml': ['.svg'],
     
-    # --- Documents ---
+    # documents portion
     'application/pdf': ['.pdf'],
-    'text/plain': ['.txt', '.log', '.md', '.py', '.c', '.cpp', '.h', '.json', '.sh', '.bat', '.ps1'],
+    'text/plain': ['.txt', '.log', '.md', '.c', '.cpp', '.h', '.json'],
     'application/rtf': ['.rtf'],
     
-    # --- Modern Office (OpenXML) & Zips ---
-    # .docx, .xlsx, .jar, .apk are all technically ZIP files internally.
+    # modern office and zip files
     'application/zip': [
         '.zip', '.docx', '.xlsx', '.pptx', '.jar', '.apk', 
         '.docm', '.xlsm', '.pptm', '.odt', '.ods'
     ],
     
-    # --- Legacy Office (OLE2 Binary Formats) ---
-    # These are crucial, otherwise valid .doc files will be flagged as "Mismatch"
+    # legacy office (OLE2 Binary Formats)
     'application/msword': ['.doc', '.dot'],
     'application/vnd.ms-excel': ['.xls', '.xlt'],
     'application/vnd.ms-powerpoint': ['.ppt', '.pot', '.pps'],
-    'application/vnd.ms-office': ['.doc', '.xls', '.ppt'], # Generic OLE fallback
+    'application/vnd.ms-office': ['.doc', '.xls', '.ppt'], 
     
-    # --- Specific OpenXML (Some magic libs get very specific) ---
+    # specific openXML
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
     'application/vnd.openxmlformats-officedocument.presentationml.presentation': ['.pptx'],
 
-    # --- Scripts ---
+    # scripts portion
     'text/x-python': ['.py'],
     'text/x-shellscript': ['.sh', '.bash'],
     'application/java-archive': ['.jar'],
+    'text/x-perl': ['.pl'],
+    'application/x-javascript': ['.js'],
+    'text/javascript': ['.js'],
+    'application/javascript': ['.js'],
+    'application/x-php': ['.php'],
+    'text/x-php': ['.php'],
 }
 
-# Define your output folders
+SAFE_TEXT_EXTENSIONS = {
+    '.conf', '.config', '.ini', '.cfg', '.env', '.yaml', '.yml', 
+    '.toml', '.properties', '.rc', '', '.gitignore', '.dockerignore', '.sql'
+}
+
+
+# destination folders
 REPORTS_DIR = "reports"
 BACKUP_DIR = "backup"
 
+
 def is_excluded(path):
     return any(os.path.commonpath([path, e]) == e for e in EXCLUDE_DIRS)
+
 
 def delete_file(path):
     try:
@@ -82,6 +111,7 @@ def delete_file(path):
         return False, "File not found."
     except Exception as e:
         return False, str(e)
+
 
 def save_report_archive(files_info):
     """
@@ -134,6 +164,7 @@ def save_report_archive(files_info):
         if os.path.exists(txt_filename): os.remove(txt_filename)
         return None, f"Failed to save report: {str(e)}"
 
+
 def scan_home_directory(root_path, progress_callback=None):
     files_info = []
     scanned_count = 0
@@ -164,33 +195,35 @@ def scan_home_directory(root_path, progress_callback=None):
                 if is_exec: 
                     msgs.append("permissions_executable_bit_set")
                 
-                # Get Magic Number (MIME)
+                # get magic mumber (MIME)
                 sig = "unknown"
                 if mime_detector:
                     try: sig = mime_detector.from_file(fpath)
                     except: pass
                 
-                # 2. Suspicious Signature Check (Executables lurking in data folders)
-                if 'dosexec' in sig or 'x-executable' in sig: 
-                    msgs.append(f"suspicious_signature:{sig}")
+                # 2. Flag based on dangerous file signature
+                if sig in DANGEROUS_SIGNATURES: 
+                    msgs.append(f"dangerous_signature:{sig}")
                 
-                # 3. Suspicious Extension Check (Now includes macros/scr/jar)
+                # 3. Suspicious Extension Check
                 if ext in SUSPICIOUS_EXTENSIONS: 
                     msgs.append(f"suspicious_extension:{ext}")
 
-                # [NEW] 4. Double Extension Trick Check
-                # Example: "invoice.pdf.exe" -> The OS hides .exe, user sees .pdf
+                # 4. Double Extension Trick Check Like 'peter.pdf.exe'
                 parts = fname.split('.')
                 if len(parts) > 2:
-                    # If it ends in a risky extension but has another extension before it
+                    # if it ends in a risky extension but has another extension before it
                     if ext in SUSPICIOUS_EXTENSIONS:
                          msgs.append("possible_double_extension_trick")
 
-                # 5. Mismatch Check (Signature vs Extension)
+                # 5. mismatch check, need to compare extension vs file signature
                 if mime_detector and sig in MIME_TO_EXT:
-                    # We check if the current extension is NOT in the allowed list for this signature
                     if ext not in MIME_TO_EXT[sig]:
-                        msgs.append(f"mismatch_sig({sig})_vs_ext({ext})")
+                        # will not flag text files with config/benign extensions
+                        if sig == 'text/plain' and ext in SAFE_TEXT_EXTENSIONS:
+                            pass  # skip flagging
+                        else:
+                            msgs.append(f"mismatch_sig({sig})_vs_ext({ext})")
 
                 if msgs:
                     vulnerable_count += 1
