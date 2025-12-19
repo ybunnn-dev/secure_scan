@@ -4,13 +4,13 @@ SecureScan is a Linux-based security auditing tool designed to scan all files in
 
 ---
 
-## 📌 Overview
+##  Overview
 
 SecureScan recursively scans every file in the user's home directory. For each file, it applies four layers of security checks focusing on permissions, file type, extension, and mismatches. After scanning all files, it returns a summarized report of flagged files and their respective issues.
 
 ---
 
-## 🔄 How SecureScan Works
+## How SecureScan Works
 
 ### **1. Main Loop (File Scanning Process)**
 
@@ -38,7 +38,7 @@ SecureScan performs **four checks** on every file. If a file fails any test, a f
 
 ---
 
-## 📥 Installation & Usage
+##  Installation & Usage
 
 You can run SecureScan using a pre-built portable file or by running the source code directly.
 
@@ -81,7 +81,7 @@ If you want to modify the code or contribute, you can clone the repository.
 
 ---
 
-## 📄 Output
+## Output
 
 At the end of the scan, SecureScan produces a structured report containing:
 * List of scanned files
@@ -90,12 +90,12 @@ At the end of the scan, SecureScan produces a structured report containing:
 
 ---
 
-## 🚀 Goal
+##  Goal
 
 SecureScan aims to provide users with a simple but effective first line of defense by identifying unusual or potentially harmful files within their home directory, increasing security awareness and reducing unnoticed threats.
 
 ---
 
-## 📌 Disclaimer
+## Disclaimer
 
 SecureScan is a detection tool, **not** a full antivirus solution. While it helps identify suspicious files, users should still use proper security practices and trusted antivirus software for complete protection.

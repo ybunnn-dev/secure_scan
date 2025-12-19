@@ -99,7 +99,7 @@ REPORTS_DIR = "reports"
 BACKUP_DIR = "backup"
 
 
-def is_excluded(path):
+def check_excluded(path):
     return any(os.path.commonpath([path, e]) == e for e in EXCLUDE_DIRS)
 
 
@@ -112,7 +112,7 @@ def delete_file(path):
     except Exception as e:
         return False, str(e)
 
-
+#this is for archiving the report. we save the report into two paths for redundancy that can support backup
 def save_report_archive(files_info):
     """
     Saves results to 'reports/' and copies to 'backup/'.
@@ -143,10 +143,7 @@ def save_report_archive(files_info):
 
         with open(txt_filename, mode='w', encoding='utf-8') as f:
             f.write(f"Scan Report Generated\n")
-            f.write(f"=====================\n")
             f.write(f"Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-            f.write(f"Total Suspicious Files: {len(files_info)}\n")
-            f.write(f"Scanned Directory: {HOME}\n")
 
         with tarfile.open(primary_path, "w:gz") as tar:
             tar.add(csv_filename, arcname=csv_filename)
@@ -175,7 +172,7 @@ def scan_home_directory(root_path, progress_callback=None):
         mime_detector = None
 
     for dirpath, dirnames, filenames in os.walk(root_path, topdown=True):
-        if is_excluded(dirpath):
+        if check_excluded(dirpath):
             dirnames[:] = []
             continue   
         for fname in filenames:
