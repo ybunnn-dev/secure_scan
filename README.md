@@ -40,27 +40,15 @@ SecureScan performs **four checks** on every file. If a file fails any test, a f
 
 ##  Installation & Usage
 
-You can run SecureScan using a pre-built portable file or by running the source code directly.
+You can run SecureScan by running the source code directly.
 
-### **Option 1: Portable AppImage (Recommended for Users)**
-The easiest way to run SecureScan on any Linux distribution (Ubuntu, Arch, Fedora, etc.) without installing Python.
 
-1.  **Download** the latest `ScanSecure-x86_64.AppImage` from the [Releases page](#).
-2.  **Make it executable**:
-    ```bash
-    chmod +x ScanSecure-x86_64.AppImage
-    ```
-3.  **Run it**:
-    ```bash
-    ./ScanSecure-x86_64.AppImage
-    ```
-
-### **Option 2: Run from Source (For Developers)**
+### **Run from Source**
 If you want to modify the code or contribute, you can clone the repository.
 
 1.  **Clone the repository:**
     ```bash
-    git clone [https://github.com/yourusername/SecureScan.git](https://github.com/yourusername/SecureScan.git)
+    git clone https://github.com/ybunnn-dev/secure_scan.git
     cd SecureScan
     ```
 
@@ -71,7 +59,9 @@ If you want to modify the code or contribute, you can clone the repository.
     sudo apt install libmagic1
 
     # Install Python requirements
-    pip install -r requirements.txt
+    pip install tkinter
+    pip install pandas
+    pip install python-magic
     ```
 
 3.  **Run the App:**

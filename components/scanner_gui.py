@@ -1,4 +1,4 @@
-# scanner_gui.py
+# the main system ui
 import tkinter as tk
 from tkinter import ttk, messagebox
 import threading
@@ -30,7 +30,7 @@ class SuspiciousFileScannerUI:
         self.setup_styles()
         self.create_main_layout()
         
-        # Load the list and trigger the first selection
+        # load the list and trigger the first selection
         self.refresh_archive_list()
         self.show_page("scanner")
 
@@ -86,7 +86,7 @@ class SuspiciousFileScannerUI:
         self.scan_button.pack(pady=30)
         return page
 
-    # files screen
+    # reports screen
     def setup_files_table_page(self):
         page = tk.Frame(self.content_area, bg=self.CONTENT_BG)
         
@@ -197,15 +197,17 @@ class SuspiciousFileScannerUI:
         self.progress_label_var.set("Scanning Home Directory...")
         threading.Thread(target=self.run_scan_backend, daemon=True).start()
 
+    #the run scan ui
     def run_scan_backend(self):
         def update_ui(count, fpath):
             self.master.after(0, lambda: self.progress_label_var.set(f"Scanning ({count}): ...{fpath[-30:]}"))
 
-        count, vuln, files = scan_device.scan_home_directory(scan_device.HOME, update_ui)
+        count, vuln, files = scan_device.scan_start(scan_device.HOME, update_ui)
         archive, msg = scan_device.save_report_archive(files)
         
         self.master.after(0, lambda: self.finish_scan(count, vuln, msg))
 
+    #finish message
     def finish_scan(self, count, vuln, msg):
         self.progress_bar.stop()
         self.progress_label_var.set(f"Done. Found {vuln} suspicious files.")
@@ -235,7 +237,7 @@ class SuspiciousFileScannerUI:
                 ok, m = scan_device.delete_file(data['path'])
                 if ok: 
                     self.tree.delete(iid)
-                    # Also remove from full dataset so it doesn't reappear on search clear
+                    # remove from full dataset so it doesn't reappear on search clear
                     if data in self.full_dataset:
                         self.full_dataset.remove(data)
                     pop.destroy()

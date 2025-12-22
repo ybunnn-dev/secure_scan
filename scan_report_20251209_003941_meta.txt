@@ -1,0 +1,5 @@
+Scan Report Generated
+=====================
+Timestamp: 2025-12-09 00:39:41
+Total Suspicious Files: 72857
+Scanned Directory: /home/ybunnn-pc

@@ -90,7 +90,7 @@ MIME_TO_EXT = {
 
 SAFE_TEXT_EXTENSIONS = {
     '.conf', '.config', '.ini', '.cfg', '.env', '.yaml', '.yml', 
-    '.toml', '.properties', '.rc', '', '.gitignore', '.dockerignore', '.sql', '.te', '.js'
+    '.toml', '.properties', '.rc', '', '.gitignore', '.dockerignore', '.sql', '.te'
 }
 
 
@@ -113,6 +113,7 @@ def delete_file(path):
         return False, str(e)
 
 #this is for archiving the report. we save the report into two paths for redundancy that can support backup
+#we also insert the timestamp of the file into a txt file that could enhance the file accuracy. so that the system won't base on the file name.
 def save_report_archive(files_info):
     """
     Saves results to 'reports/' and copies to 'backup/'.
@@ -120,20 +121,21 @@ def save_report_archive(files_info):
     if not files_info:
         return None, "No files to save."
 
-    os.makedirs(REPORTS_DIR, exist_ok=True)
-    os.makedirs(BACKUP_DIR, exist_ok=True)
+    os.makedirs(REPORTS_DIR, exist_ok=True) #the main archive destination
+    os.makedirs(BACKUP_DIR, exist_ok=True) #backup destination
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    base_name = f"scan_report_{timestamp}"
+    base_name = f"scan_report_{timestamp}" #generated filename
     
     csv_filename = f"{base_name}.csv"
     txt_filename = f"{base_name}_meta.txt"
     archive_name = f"{base_name}.tar.gz"
     
-    primary_path = os.path.join(REPORTS_DIR, archive_name)
-    backup_path = os.path.join(BACKUP_DIR, archive_name)
+    primary_path = os.path.join(REPORTS_DIR, archive_name) #save to the main directory
+    backup_path = os.path.join(BACKUP_DIR, archive_name) #save to the backup directory
 
     try:
+        #writing the reports in the csv file
         with open(csv_filename, mode='w', newline='', encoding='utf-8') as f:
             writer = csv.DictWriter(f, fieldnames=["path", "file_name", "extension", "size_bytes", "executable", "reasons"])
             writer.writeheader()
@@ -155,17 +157,20 @@ def save_report_archive(files_info):
         os.remove(txt_filename)
 
         return primary_path, f"Report saved to:\n1. {primary_path}\n2. {backup_path}"
-
+    #in case the saving failed, the system will remove the report
     except Exception as e:
         if os.path.exists(csv_filename): os.remove(csv_filename)
         if os.path.exists(txt_filename): os.remove(txt_filename)
         return None, f"Failed to save report: {str(e)}"
 
 
-def scan_home_directory(root_path, progress_callback=None):
+#the main scanning function
+def scan_start(root_path, progress_callback=None):
     files_info = []
     scanned_count = 0
     vulnerable_count = 0
+
+
     try:
         mime_detector = magic.Magic(mime=True)
     except:
@@ -186,11 +191,12 @@ def scan_home_directory(root_path, progress_callback=None):
                 size = os.path.getsize(fpath)
                 ext = os.path.splitext(fname)[1].lower()
                 msgs = []
-                is_exec = os.access(fpath, os.X_OK)
+                
+                check_executable = os.access(fpath, os.X_OK) #checking if it has executable permission
 
-                # 1. Executable Bit Check
-                if is_exec: 
-                    msgs.append("permissions_executable_bit_set")
+                # 1. checking if the file has executable permission, it will be flagged
+                if check_executable: 
+                    msgs.append("permissions executable bit set")
                 
                 # get magic mumber (MIME)
                 sig = "unknown"
@@ -200,18 +206,18 @@ def scan_home_directory(root_path, progress_callback=None):
                 
                 # 2. Flag based on dangerous file signature
                 if sig in DANGEROUS_SIGNATURES: 
-                    msgs.append(f"dangerous_signature:{sig}")
+                    msgs.append(f"dangerous signature:{sig}")
                 
                 # 3. Suspicious Extension Check
                 if ext in SUSPICIOUS_EXTENSIONS: 
-                    msgs.append(f"suspicious_extension:{ext}")
+                    msgs.append(f"suspicious extension:{ext}")
 
                 # 4. Double Extension Trick Check Like 'peter.pdf.exe'
                 parts = fname.split('.')
                 if len(parts) > 2:
                     # if it ends in a risky extension but has another extension before it
                     if ext in SUSPICIOUS_EXTENSIONS:
-                         msgs.append("possible_double_extension_trick")
+                         msgs.append("possible double extension trick")
 
                 # 5. mismatch check, need to compare extension vs file signature
                 if mime_detector and sig in MIME_TO_EXT:
@@ -220,7 +226,7 @@ def scan_home_directory(root_path, progress_callback=None):
                         if sig == 'text/plain' and ext in SAFE_TEXT_EXTENSIONS:
                             pass  # skip flagging
                         else:
-                            msgs.append(f"mismatch_sig({sig})_vs_ext({ext})")
+                            msgs.append(f"mismatch: signature ({sig}) vs extension({ext})")
 
                 if msgs:
                     vulnerable_count += 1
@@ -229,7 +235,7 @@ def scan_home_directory(root_path, progress_callback=None):
                         "file_name": fname, 
                         "extension": ext, 
                         "size_bytes": size, 
-                        "executable": is_exec, 
+                        "executable": check_executable, 
                         "reasons": "; ".join(msgs)
                     })
             except: continue

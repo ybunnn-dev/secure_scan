@@ -4,9 +4,10 @@ import glob
 import tarfile
 import csv
 
-RESULTS_DIR = "results"
-REPORTS_DIR = "reports" 
+RESULTS_DIR = "results" # the directory where the current csv report is going to be placed
+REPORTS_DIR = "reports" # the directory of the archives
 
+#function to get the archive
 def get_available_archives():
     archives = []
     search_path = os.path.join(REPORTS_DIR, "scan_report_*.tar.gz")
@@ -14,6 +15,7 @@ def get_available_archives():
     for archive_path in glob.glob(search_path):
         display_time = "Unknown Date"
         try:
+            # the system will take the content of the txt file in every archive an find the "Timestamp"
             with tarfile.open(archive_path, "r:gz") as tar:
                 for member in tar.getmembers():
                     if member.name.endswith("_meta.txt"):
@@ -26,23 +28,23 @@ def get_available_archives():
         except:
             display_time = "Error reading archive"
         
+        #return the file name and timestamp for the options
         archives.append({
             "filename": archive_path,
             "display_time": display_time
         })
     
-    # sort newest file first
+    # sort newest file first for the options
     archives.sort(key=lambda x: x['filename'], reverse=True)
     return archives
 
+#preparing the archived report
 def load_archive_to_results(archive_filename):
-    """
-    Extracts CSV from archive to 'results/' and reads it.
-    """
+    # extracts CSV from archive to results directory and reads it.
     if not os.path.exists(RESULTS_DIR):
         os.makedirs(RESULTS_DIR)
 
-    # clear old results
+    # the current report must be removed first
     for f in os.listdir(RESULTS_DIR):
         if f.endswith(".csv"):
             os.remove(os.path.join(RESULTS_DIR, f))
@@ -53,10 +55,10 @@ def load_archive_to_results(archive_filename):
         with tarfile.open(archive_filename, "r:gz") as tar:
             for member in tar.getmembers():
                 if member.name.endswith(".csv"):
-                    # extract ONLY this member
+                    # extract the csv file only to the results directory
                     tar.extract(member, path=RESULTS_DIR)
                     extracted_csv_path = os.path.join(RESULTS_DIR, member.name)
-                    break # stop after finding the first CSV
+                    break # stop after finding the csv
         
         if not extracted_csv_path or not os.path.exists(extracted_csv_path):
             return []
